@@ -12,8 +12,6 @@ static void error_callback(int error, const char* description) {
 }
 
 void init(int width, int height, int fullscreen) {
-  fprintf(stderr, "Initializing...\n");
-
   if (!glfwInit()) {
     exit(EXIT_FAILURE);
   }
@@ -46,7 +44,6 @@ int update() {
 }
 
 void shutdown() {
-  fprintf(stderr, "Shutting down...\n");
   glfwDestroyWindow(window);
   glfwTerminate();
 }

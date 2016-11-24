@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"runtime"
 
-	"github.com/fcvarela/konig/graph"
+	"github.com/fcvarela/konig/graphview"
 	"github.com/fcvarela/konig/rpc"
 	"github.com/golang/glog"
 )
@@ -21,7 +21,7 @@ func init() {
 
 	// parse flags and enable stderr out
 	flag.Parse()
-	//flag.Lookup("alsologtostderr").Value.Set("true")
+	flag.Lookup("alsologtostderr").Value.Set("true")
 
 	// install clean shutdown signal handler
 	signal.Notify(signalhandlerChannel, os.Interrupt)
@@ -31,7 +31,7 @@ func main() {
 	go rpc.StartRPC()
 
 	// 0, 0, fullscreen. graph ignores width and height when full screen is set
-	graph.Init(0, 0, true)
+	graphview.Init(0, 0, true)
 
 	// wait on sigint
 	for {
@@ -40,7 +40,7 @@ func main() {
 		case <-signalhandlerChannel:
 			stop = true
 		default:
-			stop = graph.Update()
+			stop = graphview.Update()
 		}
 		if stop {
 			break
@@ -48,5 +48,5 @@ func main() {
 	}
 
 	glog.Info("Got abort signal, stopping...")
-	graph.Shutdown()
+	graphview.Shutdown()
 }
