@@ -2,12 +2,29 @@
 #include <stdio.h>
 
 #include <GL/glew.h>
+
+#if defined ( __APPLE__ )
+#include <OpenCL/opencl.h>
+#define GLFW_EXPOSE_NATIVE_COCOA
+#define GLFW_EXPOSE_NATIVE_NSGL
+#include <OpenGL/OpenGL.h>
+#elif defined ( WIN32 )
+#include <CL/cl.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
+#else
+#include <CL/cl.h>
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_GLX
+#endif
+
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 GLFWwindow *window;
 
 static void error_callback(int error, const char* description) {
-  fprintf(stderr, "Error: %s\n", description);
+  fprintf(stderr, "Error (%d): %s\n", error, description);
   exit(EXIT_FAILURE);
 }
 

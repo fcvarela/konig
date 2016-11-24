@@ -28,6 +28,7 @@ func init() {
 }
 
 func main() {
+	// placeholder
 	go rpc.StartRPC()
 
 	// 0, 0, fullscreen. graph ignores width and height when full screen is set
