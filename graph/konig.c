@@ -40,7 +40,6 @@ void init(int width, int height, int fullscreen) {
 }
 
 int update() {
-  fprintf(stderr, "Updating...\n");
   glfwSwapBuffers(window);
   glfwPollEvents();
   return glfwWindowShouldClose(window);

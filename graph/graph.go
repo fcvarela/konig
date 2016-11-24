@@ -26,8 +26,8 @@ package graph
 #cgo linux,wayland CFLAGS: -D_GLFW_WAYLAND
 
 // Linker Options:
-#cgo linux,!wayland LDFLAGS: -lGL -lX11 -lXrandr -lXxf86vm -lXi -lXcursor -lm -lXinerama -ldl -lrt
-#cgo linux,wayland LDFLAGS: -lGL -lX11 -lXrandr -lXxf86vm -lXi -lXcursor -lm -lXinerama -ldl -lrt
+#cgo linux,!wayland LDFLAGS: -lGL -lX11 -lXrandr -lXxf86vm -lXi -lXcursor -lm -lXinerama -ldl -lrt -lglfw3
+#cgo linux,wayland LDFLAGS: -lGL -lX11 -lXrandr -lXxf86vm -lXi -lXcursor -lm -lXinerama -ldl -lrt -lglfw3
 
 
 // FreeBSD Build Tags
@@ -37,8 +37,8 @@ package graph
 #cgo freebsd,wayland CFLAGS: -D_GLFW_WAYLAND -D_GLFW_HAS_DLOPEN
 
 // Linker Options:
-#cgo freebsd,!wayland LDFLAGS: -lGL -lX11 -lXrandr -lXxf86vm -lXi -lXcursor -lm -lXinerama
-#cgo freebsd,wayland LDFLAGS: -lGL -lX11 -lXrandr -lXxf86vm -lXi -lXcursor -lm -lXinerama
+#cgo freebsd,!wayland LDFLAGS: -lGL -lX11 -lXrandr -lXxf86vm -lXi -lXcursor -lm -lXinerama -lglfw3
+#cgo freebsd,wayland LDFLAGS: -lGL -lX11 -lXrandr -lXxf86vm -lXi -lXcursor -lm -lXinerama -lglfw3
 
 #include "konig.h"
 */
@@ -60,10 +60,7 @@ func Init(width, height int, fullscreen bool) {
 // and refreshes the view. Returns true if the user wants to quit.
 func Update() bool {
 	var wantsQuitInt = C.update()
-	if wantsQuitInt == 1 {
-		return true
-	}
-	return false
+	return wantsQuitInt == 1
 }
 
 // Shutdown _must_ be called ont he main thread. It destroys all
