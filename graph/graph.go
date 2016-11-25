@@ -28,8 +28,7 @@ type edge struct {
 
 // graph contains all data necessary to manage a graph where nodes and edges
 // are continuous memory regions. this makes it really easy to use as a GPU
-// buffer we can draw directly from as well as passing them to compute
-// kernels
+// buffer we can use directly with both compute kernels and draw operations.
 type graph struct {
 	nodes       []node
 	edges       []edge
@@ -115,6 +114,7 @@ func (g Handle) NewEdge(n1, n2 NodeHandle) EdgeHandle {
 	graphsLock.Lock()
 	defer graphsLock.Unlock()
 
+	// create the edge
 	var newEdge = edge{active: 1, node1ID: n1, node2ID: n2}
 
 	// do we have any items in our freeset? return the first one after deleting it
@@ -125,6 +125,9 @@ func (g Handle) NewEdge(n1, n2 NodeHandle) EdgeHandle {
 		// initialize it
 		graphs[g].edges[k] = newEdge
 
+		// index it
+		g.indexEdge(k, []NodeHandle{n1, n2})
+
 		// done
 		return k
 	}
@@ -132,8 +135,13 @@ func (g Handle) NewEdge(n1, n2 NodeHandle) EdgeHandle {
 	// got here? we don't have anything in our free set, add a new edge
 	graphs[g].edges = append(graphs[g].edges, newEdge)
 
-	// done
-	return EdgeHandle(len(graphs[g].edges) - 1)
+	// get a handle
+	var newEdgeHandle = EdgeHandle(len(graphs[g].edges) - 1)
+
+	// index it
+	g.indexEdge(newEdgeHandle, []NodeHandle{n1, n2})
+
+	return newEdgeHandle
 }
 
 func (g Handle) deleteEdge(e EdgeHandle) {
