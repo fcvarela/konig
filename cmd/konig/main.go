@@ -45,7 +45,7 @@ func main() {
 	go rpc.StartRPC()
 
 	// 0, 0, fullscreen. graph ignores width and height when full screen is set
-	graphview.Init(0, 0, true)
+	graphview.Init(1280, 720, false)
 
 	// wait on sigint
 	for {
