@@ -1,4 +1,4 @@
-package graph
+package graphview
 
 // #include "konig.h"
 import "C"
