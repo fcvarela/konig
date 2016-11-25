@@ -1,3 +1,7 @@
+// Package graph provides an implementation of a graph whose nodes and edges are represented
+// in sequential memory so that they can be used directly by compute and graphics kernels.
+// the convention for thread safery is to use a mutex on outer operations (public api)
+// and _not_ on inner operations (lowercase).
 package graph
 
 import "sync"
