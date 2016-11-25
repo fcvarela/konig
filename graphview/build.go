@@ -1,4 +1,4 @@
-package graphview
+package graph
 
 /*
 // Windows Build Tags

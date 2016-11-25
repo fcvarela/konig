@@ -46,9 +46,6 @@ void init(int width, int height, int fullscreen) {
   } else {
     window = glfwCreateWindow(width, height, "Konig", NULL, NULL);
   }
-  if (!window) {
-    glfwTerminate();
-  }
 
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
