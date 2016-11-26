@@ -1,6 +1,6 @@
 package graphview
 
-// #include "konig.h"
+// #include "graphview.h"
 import "C"
 
 // Init _must_ be called on the main thread. It initializes the graphics
