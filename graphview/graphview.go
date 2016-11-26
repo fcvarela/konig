@@ -12,13 +12,13 @@ func Init(width, height int, fullscreen bool) {
 	if fullscreen {
 		fullScreenInt = 1
 	}
-	C.init(C.int(width), C.int(height), C.int(fullScreenInt))
+	C.graphview_init(C.int(width), C.int(height), C.int(fullScreenInt))
 }
 
 // Update _must_ be called on the main thread. It processes user events
 // and refreshes the view. Returns true if the user wants to quit.
 func Update() bool {
-	var wantsQuitInt = C.update()
+	var wantsQuitInt = C.graphview_update()
 	return wantsQuitInt == 1
 }
 
@@ -26,5 +26,5 @@ func Update() bool {
 // GPU objects, detaches the internal event handlers and closes the
 // graph view.
 func Shutdown() {
-	C.shutdown()
+	C.graphview_shutdown()
 }

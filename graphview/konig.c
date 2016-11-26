@@ -28,7 +28,7 @@ static void error_callback(int error, const char* description) {
   exit(EXIT_FAILURE);
 }
 
-void init(int width, int height, int fullscreen) {
+void graphview_init(int width, int height, int fullscreen) {
   if (!glfwInit()) {
     exit(EXIT_FAILURE);
   }
@@ -51,13 +51,13 @@ void init(int width, int height, int fullscreen) {
   glfwSwapInterval(1);
 }
 
-int update() {
+int graphview_update() {
   glfwSwapBuffers(window);
   glfwPollEvents();
   return glfwWindowShouldClose(window);
 }
 
-void shutdown() {
+void graphview_shutdown() {
   glfwDestroyWindow(window);
   glfwTerminate();
 }
