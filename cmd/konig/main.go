@@ -12,6 +12,8 @@ import (
 )
 
 var (
+	grpcPort             uint
+	grpcHost             string
 	signalhandlerChannel = make(chan os.Signal, 1)
 )
 
@@ -26,6 +28,11 @@ func setupGlogStderr() {
 }
 
 func init() {
+	// setup command flag
+	flag.UintVar(&grpcPort, "port", 1234, "port to be used by the grpc server")
+	flag.StringVar(&grpcHost, "host", "0.0.0.0", "rpc host")
+	flag.Parse()
+
 	// we need to process input and draw on the main thread
 	// which is the one we always start on
 	runtime.LockOSThread()
@@ -42,7 +49,7 @@ func init() {
 
 func main() {
 	// placeholder
-	go rpc.StartRPC()
+	go rpc.Start(grpcHost, grpcPort)
 
 	// 0, 0, fullscreen. graph ignores width and height when full screen is set
 	graphview.Init(1280, 720, false)
