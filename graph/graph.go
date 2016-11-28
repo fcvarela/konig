@@ -167,9 +167,12 @@ func (g Handle) DeleteEdge(e EdgeHandle) {
 // determine what edges need to be removed
 func (g Handle) indexEdge(e EdgeHandle, nodes []NodeHandle) {
 	for _, n := range nodes {
+		// does the slice exist?
 		if graphs[g].nodeEdgeIndex[n] == nil {
+			// nope, create it
 			graphs[g].nodeEdgeIndex[n] = make([]EdgeHandle, 0)
 		}
+		// append the edge to it
 		graphs[g].nodeEdgeIndex[n] = append(graphs[g].nodeEdgeIndex[n], e)
 	}
 }
