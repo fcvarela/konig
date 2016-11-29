@@ -66,7 +66,7 @@ extern "C" {
     glfwSwapInterval(1);
 
     // set immutable gl stuff
-    glClearColor(1.0, 0.0, 0.0, 1.0);
+    glClearColor(0.7, 0.7, 0.7, 1.0);
   }
 
   ImVec4 clear_color = ImColor(114, 144, 154);
