@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package rpc;
+
+enum GraphType {
+  INVALID_TYPE = 0;
+  UNDIRECTED   = 1;
+  DIRECTED     = 2;
+}
+
+message Graph {
+  string name = 1;
+  repeated Vertex vertices = 2;
+  repeated Edge edges = 3;
+  uint32 num_vertices = 4;
+  uint32 num_edges = 5;
+}
+
+message GraphStats {
+  uint32 vertices = 1;
+  uint32 edges = 2;
+}
+
+message Vertex {
+  string label = 1;
+}
+
+message Edge {
+  Vertex x = 1;
+  Vertex y = 2;
+}
+
+message CreateGraphRequest{
+  Graph graph = 1;
+}
+
+message CreateGraphResponse{
+  GraphStats stats = 1;
+}
+
+message AddVerticesRequest{
+  repeated Vertex vertices = 1;
+}
+
+message AddVerticesResponse{
+  GraphStats stats = 1;
+}
+
+message AddEdgesRequest{
+  repeated Edge edges = 1;
+}
+
+message AddEdgesResponse{
+  GraphStats stats = 1;
+}
+
+message RemoveVerticesRequest {
+  repeated Vertex vertices = 1;
+}
+
+message RemoveVerticesResponse{
+  GraphStats stats = 1;
+}
+
+message RemoveEdgesRequest {
+  repeated Edge edges = 1;
+}
+
+message RemoveEdgesResponse {
+  GraphStats stats = 1;
+}
+
+service KonigRPC {
+  rpc CreateGraph(CreateGraphRequest) returns (CreateGraphResponse);
+  rpc AddVertices(AddVerticesRequest) returns (AddVerticesResponse);
+  rpc AddEdges(AddEdgesRequest) returns (AddEdgesResponse);
+  rpc RemoveVertices(RemoveVerticesRequest) returns (RemoveVerticesResponse);
+  rpc RemoveEdges(RemoveEdgesRequest) returns (RemoveEdgesResponse);
+}
