@@ -44,10 +44,12 @@ extern "C" {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_VISIBLE, 1);
+
+    const GLFWvidmode *vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
     if (fullscreen == 1) {
       // ignore requested width and height, we're going fullscreen!
-      const GLFWvidmode *vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
       window = glfwCreateWindow(vidMode->width, vidMode->height, "Konig", glfwGetPrimaryMonitor(), NULL);
     } else {
       window = glfwCreateWindow(width, height, "Konig", NULL, NULL);
