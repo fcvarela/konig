@@ -91,7 +91,7 @@ func New() Handle {
 	// map it
 	graphHandles[handle] = uint32(len(graphs) - 1)
 
-	return Handle(handle)
+	return handle
 }
 
 // NewNode returns a handle for a newly created graph node
@@ -160,7 +160,9 @@ func DeleteNode(g Handle, n NodeHandle) error {
 
 	// delete any edge connected to or from this node, they are indexed in nodeEdgeIndex
 	for _, e := range graphs[gidx].nodeEdgeIndex[n] {
-		deleteEdge(g, e)
+		if err := deleteEdge(g, e); err != nil {
+			return err
+		}
 	}
 
 	// reset the index for this node
