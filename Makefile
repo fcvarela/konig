@@ -5,24 +5,17 @@ PACKAGE_PREFIX=github.com/fcvarela/konig
 BIN=konig
 CLIENT_BIN=konig-client
 PROTOS=rpc/graph.proto
+LINTER=gometalinter
 
 all: $(BIN) $(CLIENT_BIN)
 
 .PHONY: clean clean-protos protos lint vet
 
-vet:
-	$(GO) vet $(PACKAGE_PREFIX)/cmd/konig
-	$(GO) vet $(PACKAGE_PREFIX)/cmd/client
-	$(GO) vet $(PACKAGE_PREFIX)/graph
-	$(GO) vet $(PACKAGE_PREFIX)/graphview
-	$(GO) vet $(PACKAGE_PREFIX)/rpc
-
 lint:
-	golint $(PACKAGE_PREFIX)/cmd/konig
-	golint $(PACKAGE_PREFIX)/cmd/client
-	golint $(PACKAGE_PREFIX)/graph
-	golint $(PACKAGE_PREFIX)/graphview
-	golint $(PACKAGE_PREFIX)/rpc
+	$(LINTER) cmd/client
+	$(LINTER) -e pb.go rpc
+	$(LINTER) graph
+	$(LINTER) graphview
 
 test:
 	$(GO) test $(PACKAGE_PREFIX)/rpc $(PACKAGE_PREFIX)/graph
