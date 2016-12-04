@@ -16,32 +16,34 @@ import (
 )
 
 var (
-	addVertexCommand = &cli.Command{
-		Name:    "vertex",
-		Aliases: []string{"v"},
+	addNodeCommand = &cli.Command{
+		Name:    "node",
+		Aliases: []string{"n"},
 		Action: func(c *cli.Context) error {
 			if c.NArg() != 1 {
 				return errors.New("invalid number of parameters")
 			}
-			label := c.Args().First()
+			g := c.Args().First()
 			client := c.App.Metadata["client"].(rpc.KonigRPCClient)
-			resp, err := client.AddVertices(
+			resp, err := client.AddNodes(
 				context.Background(),
-				&rpc.AddVerticesRequest{
-					Vertices: []*rpc.Vertex{
-						&rpc.Vertex{
-							Label: label,
-						},
+				&rpc.AddNodesRequest{
+					Graph: &rpc.Graph{
+						Handle: g,
+					},
+					Nodes: []*rpc.Node{
+						&rpc.Node{},
 					},
 				})
-			if err == nil {
-				data, err := json.Marshal(resp)
-				if err != nil {
-					return err
-				}
-				fmt.Printf("%s\n", data)
+			if err != nil {
+				return err
 			}
-			return err
+			data, err := json.Marshal(resp)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s\n", data)
+			return nil
 		},
 	}
 
@@ -49,34 +51,73 @@ var (
 		Name:    "edge",
 		Aliases: []string{"e"},
 		Action: func(c *cli.Context) error {
-
-			client := c.App.Metadata["client"].(rpc.KonigRPCClient)
-			resp, err := client.AddEdges(context.Background(), &rpc.AddEdgesRequest{})
-			if err == nil {
-				data, err := json.Marshal(resp)
-				if err != nil {
-					return err
-				}
-				fmt.Printf("%s\n", data)
+			if c.NArg() != 3 {
+				return errors.New("invalid number of parameters")
 			}
-			return err
+			g := c.Args().Get(0)
+			n1 := c.Args().Get(1)
+			n2 := c.Args().Get(2)
+			client := c.App.Metadata["client"].(rpc.KonigRPCClient)
+			resp, err := client.AddEdges(
+				context.Background(),
+				&rpc.AddEdgesRequest{
+					Graph: &rpc.Graph{
+						Handle: g,
+					},
+					Edges: []*rpc.Edge{
+						&rpc.Edge{
+							Node1: &rpc.Node{
+								Handle: n1,
+							},
+							Node2: &rpc.Node{
+								Handle: n2,
+							},
+						},
+					},
+				})
+			if err != nil {
+				return err
+			}
+			data, err := json.Marshal(resp)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s\n", data)
+			return nil
 		},
 	}
 
-	removeVertexCommand = &cli.Command{
-		Name:    "vertex",
-		Aliases: []string{"v"},
+	removeNodeCommand = &cli.Command{
+		Name:    "node",
+		Aliases: []string{"n"},
 		Action: func(c *cli.Context) error {
-			client := c.App.Metadata["client"].(rpc.KonigRPCClient)
-			resp, err := client.RemoveVertices(context.Background(), &rpc.RemoveVerticesRequest{})
-			if err == nil {
-				data, err := json.Marshal(resp)
-				if err != nil {
-					return err
-				}
-				fmt.Printf("%s\n", data)
+			if c.NArg() != 2 {
+				return errors.New("invalid number of parameters")
 			}
-			return err
+			g := c.Args().Get(0)
+			n := c.Args().Get(1)
+			client := c.App.Metadata["client"].(rpc.KonigRPCClient)
+			resp, err := client.RemoveNodes(
+				context.Background(),
+				&rpc.RemoveNodesRequest{
+					Graph: &rpc.Graph{
+						Handle: g,
+					},
+					Nodes: []*rpc.Node{
+						&rpc.Node{
+							Handle: n,
+						},
+					},
+				})
+			if err != nil {
+				return err
+			}
+			data, err := json.Marshal(resp)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s\n", data)
+			return nil
 		},
 	}
 
@@ -84,16 +125,34 @@ var (
 		Name:    "edge",
 		Aliases: []string{"e"},
 		Action: func(c *cli.Context) error {
-			client := c.App.Metadata["client"].(rpc.KonigRPCClient)
-			resp, err := client.RemoveEdges(context.Background(), &rpc.RemoveEdgesRequest{})
-			if err == nil {
-				data, err := json.Marshal(resp)
-				if err != nil {
-					return err
-				}
-				fmt.Printf("%s\n", data)
+			if c.NArg() != 2 {
+				return errors.New("invalid number of parameters")
 			}
-			return err
+			g := c.Args().Get(0)
+			e := c.Args().Get(1)
+			client := c.App.Metadata["client"].(rpc.KonigRPCClient)
+			resp, err := client.RemoveEdges(
+				context.Background(),
+				&rpc.RemoveEdgesRequest{
+					Graph: &rpc.Graph{
+						Handle: g,
+					},
+					Edges: []*rpc.Edge{
+						&rpc.Edge{
+							Handle: e,
+						},
+					},
+				})
+
+			if err != nil {
+				return err
+			}
+			data, err := json.Marshal(resp)
+			if err != nil {
+				return nil
+			}
+			fmt.Printf("%s\n", data)
+			return nil
 		},
 	}
 )
@@ -116,20 +175,21 @@ func main() {
 			Aliases: []string{"c"},
 			Usage:   "creates a graph",
 			Action: func(c *cli.Context) error {
-				if c.NArg() != 1 {
-					return errors.New("invalid number of parameters")
-				}
-				name := c.Args().First()
 				client := c.App.Metadata["client"].(rpc.KonigRPCClient)
-				resp, err := client.CreateGraph(context.Background(), &rpc.CreateGraphRequest{Graph: &rpc.Graph{Name: name}})
-				if err == nil {
-					data, err := json.Marshal(resp)
-					if err != nil {
-						return err
-					}
-					fmt.Printf("%s\n", data)
+				resp, err := client.CreateGraph(
+					context.Background(),
+					&rpc.CreateGraphRequest{
+						Graph: &rpc.Graph{},
+					})
+				if err != nil {
+					return err
 				}
-				return err
+				data, err := json.Marshal(resp)
+				if err != nil {
+					return err
+				}
+				fmt.Printf("%s\n", data)
+				return nil
 			},
 		},
 		&cli.Command{
@@ -137,7 +197,7 @@ func main() {
 			Aliases: []string{"a"},
 			Usage:   "adds a vertex or an edge",
 			Subcommands: []*cli.Command{
-				addVertexCommand,
+				addNodeCommand,
 				addEdgeCommand,
 			},
 		},
@@ -146,7 +206,7 @@ func main() {
 			Aliases: []string{"r"},
 			Usage:   "removes a node or an edge",
 			Subcommands: []*cli.Command{
-				removeVertexCommand,
+				removeNodeCommand,
 				removeEdgeCommand,
 			},
 		},
@@ -154,5 +214,7 @@ func main() {
 	client := initClient()
 	app.Metadata = make(map[string]interface{}, 1)
 	app.Metadata["client"] = client
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 }

@@ -1,3 +1,5 @@
+//Package rpc implements a gRPC service
+//go:generate ./codegen.sh
 package rpc
 
 import (
@@ -5,6 +7,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/fcvarela/konig/graph"
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
 
@@ -12,83 +15,97 @@ import (
 	"golang.org/x/net/context"
 )
 
+var (
+	errGraphNotFound      = errors.New("graph not found")
+	errFailedToAddNode    = errors.New("failed to add a node")
+	errFailedToAddEdge    = errors.New("failed to add a edge")
+	errFailedToRemoveNode = errors.New("failed to remove a node")
+	errFailedToRemoveEdge = errors.New("failed to remove a edge")
+)
+
+//KonigService struct implements the gRPC handlers
 type KonigService struct {
-	GraphName   string
-	NumVertices uint32
-	NumEdges    uint32
-	Vertices    []*Vertex
-	Edges       []*Edge
 }
 
-func (s *KonigService) grapStats() *GraphStats {
-	return &GraphStats{
-		Vertices: uint32(len(s.Vertices)),
-		Edges:    uint32(len(s.Edges)),
-	}
-}
-
+//CreateGraph creates a graph
 func (s *KonigService) CreateGraph(ctx context.Context, in *CreateGraphRequest) (*CreateGraphResponse, error) {
-	if len(in.Graph.Name) == 0 {
-		return nil, errors.New("invalid graph name")
-	}
-	s.GraphName = in.Graph.Name
-	s.NumEdges = in.Graph.NumEdges
-	s.NumVertices = in.Graph.NumVertices
-	s.Vertices = make([]*Vertex, s.NumVertices)
-	for _, v := range in.Graph.Vertices {
-		s.Vertices = append(s.Vertices, v)
-	}
-	s.Edges = make([]*Edge, s.NumEdges)
-	for _, e := range in.Graph.Edges {
-		s.Edges = append(s.Edges, e)
-	}
-	return &CreateGraphResponse{Stats: s.grapStats()}, nil
+	handle := graph.New()
+	return &CreateGraphResponse{Graph: &Graph{Handle: string(handle)}}, nil
 }
 
+//AddEdges adds edges to a graph
 func (s *KonigService) AddEdges(ctx context.Context, in *AddEdgesRequest) (*AddEdgesResponse, error) {
-	if s.GraphName == "" {
-		return nil, errors.New("graph not initialized")
+	if in.Graph == nil || in.Graph.Handle == "" {
+		glog.Errorf("%s", errGraphNotFound)
+		return nil, errGraphNotFound
 	}
+	g := graph.Handle(in.Graph.Handle)
+	var edges []*Edge
 	for _, e := range in.Edges {
-		s.Edges = append(s.Edges, e)
+		n1 := graph.NodeHandle(e.Node1.Handle)
+		n2 := graph.NodeHandle(e.Node2.Handle)
+		h, err := graph.NewEdge(g, n1, n2)
+		if err != nil {
+			glog.Errorf("%s graph: %s node1: %s node2: %s err: %s", errFailedToAddEdge, in.Graph.Handle, e.Node1.Handle, e.Node2.Handle, err)
+			continue
+		}
+		e.Handle = string(h)
+		edges = append(edges, e)
 	}
-	return &AddEdgesResponse{Stats: s.grapStats()}, nil
+	return &AddEdgesResponse{Graph: in.Graph, Edges: edges}, nil
 }
 
-func (s *KonigService) AddVertices(ctx context.Context, in *AddVerticesRequest) (*AddVerticesResponse, error) {
-	if s.GraphName == "" {
-		return nil, errors.New("graph not initialized")
+//AddNodes adds nodes to a graph
+func (s *KonigService) AddNodes(ctx context.Context, in *AddNodesRequest) (*AddNodesResponse, error) {
+	if in.Graph == nil || in.Graph.Handle == "" {
+		glog.Errorf("%s", errGraphNotFound)
+		return nil, errGraphNotFound
 	}
-	for _, v := range in.Vertices {
-		glog.Infof("add vertex: %s", v.Label)
-		s.Vertices = append(s.Vertices, v)
+	g := graph.Handle(in.Graph.Handle)
+	var nodes []*Node
+	for range in.Nodes {
+		h, err := graph.NewNode(g)
+		if err != nil {
+			glog.Errorf("%s %s %s", errFailedToAddNode, in.Graph.Handle, err)
+			return nil, err
+		}
+		n := &Node{Handle: string(h)}
+		nodes = append(nodes, n)
 	}
-	return &AddVerticesResponse{Stats: s.grapStats()}, nil
+	return &AddNodesResponse{Graph: in.Graph, Nodes: nodes}, nil
 }
 
-func (s *KonigService) RemoveVertices(ctx context.Context, in *RemoveVerticesRequest) (*RemoveVerticesResponse, error) {
-	//FIXME: think of a strategy
-	return nil, errors.New("not implemented")
-}
-
-func (s *KonigService) RemoveEdges(ctx context.Context, in *RemoveEdgesRequest) (*RemoveEdgesResponse, error) {
-	//FIXME: lock lists
-	el := make([]*Edge, s.NumEdges)
-	removed := false
-	for _, e := range in.Edges {
-		for _, ge := range s.Edges {
-			if e.X.Label == ge.X.Label && e.Y.Label == ge.Y.Label {
-				removed = true
-				continue
-			}
-			el = append(el, ge)
+//RemoveNodes removes nodes from a graph
+func (s *KonigService) RemoveNodes(ctx context.Context, in *RemoveNodesRequest) (*RemoveNodesResponse, error) {
+	if in.Graph == nil || in.Graph.Handle == "" {
+		glog.Errorf("%s", errGraphNotFound)
+		return nil, errGraphNotFound
+	}
+	g := graph.Handle(in.Graph.Handle)
+	for _, node := range in.Nodes {
+		glog.Infof("remove node")
+		n := graph.NodeHandle(node.Handle)
+		if err := graph.DeleteNode(g, n); err != nil {
+			glog.Errorf("%s %s %s: %s", errFailedToRemoveNode, in.Graph.Handle, node.Handle, err)
 		}
 	}
-	if !removed {
-		return nil, errors.New("no edges were remove")
+	return &RemoveNodesResponse{}, nil
+}
+
+//RemoveEdges removes edges from a graph
+func (s *KonigService) RemoveEdges(ctx context.Context, in *RemoveEdgesRequest) (*RemoveEdgesResponse, error) {
+	if in.Graph == nil || in.Graph.Handle == "" {
+		glog.Errorf("%s", errGraphNotFound)
+		return nil, errGraphNotFound
 	}
-	s.Edges = el
-	return &RemoveEdgesResponse{Stats: s.grapStats()}, nil
+	g := graph.Handle(in.Graph.Handle)
+	for _, edge := range in.Edges {
+		e := graph.EdgeHandle(edge.Handle)
+		if err := graph.DeleteEdge(g, e); err != nil {
+			glog.Errorf("%s %s %s: %s", errFailedToRemoveEdge, in.Graph.Handle, edge.Handle, err)
+		}
+	}
+	return &RemoveEdgesResponse{}, nil
 }
 
 //Start starts an RPC server

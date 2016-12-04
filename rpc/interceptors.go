@@ -12,6 +12,10 @@ import (
 //RequestLogger logs and times all grpc calls
 func RequestLogger(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	t := time.Now()
+	/*
+		data, _ := json.Marshal(req)
+		glog.Infof("req: %s", data)
+	*/
 	resp, err := handler(ctx, req)
 	method := strings.Replace(info.FullMethod, "/rpc.KonigRPC/", "", -1)
 	glog.Infof("call %s took %dns", method, time.Since(t).Nanoseconds())

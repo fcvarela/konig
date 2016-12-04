@@ -9,11 +9,7 @@ enum GraphType {
 }
 
 message Graph {
-  string name = 1;
-  repeated Vertex vertices = 2;
-  repeated Edge edges = 3;
-  uint32 num_vertices = 4;
-  uint32 num_edges = 5;
+  string handle = 1;
 }
 
 message GraphStats {
@@ -21,13 +17,14 @@ message GraphStats {
   uint32 edges = 2;
 }
 
-message Vertex {
-  string label = 1;
+message Node {
+  string handle = 1;
 }
 
 message Edge {
-  Vertex x = 1;
-  Vertex y = 2;
+  string handle = 1;
+  Node node1 = 2;
+  Node node2 = 3;
 }
 
 message CreateGraphRequest{
@@ -35,35 +32,42 @@ message CreateGraphRequest{
 }
 
 message CreateGraphResponse{
-  GraphStats stats = 1;
+  Graph graph = 1;
 }
 
-message AddVerticesRequest{
-  repeated Vertex vertices = 1;
+message AddNodesRequest{
+  Graph graph = 1;
+  repeated Node nodes = 2;
 }
 
-message AddVerticesResponse{
-  GraphStats stats = 1;
+message AddNodesResponse{
+  Graph graph = 1;
+  repeated Node nodes = 2;
 }
 
 message AddEdgesRequest{
-  repeated Edge edges = 1;
+  Graph graph = 1;
+  repeated Edge edges = 2;
 }
 
 message AddEdgesResponse{
-  GraphStats stats = 1;
+  Graph graph = 1;
+  repeated Edge edges = 2;
 }
 
-message RemoveVerticesRequest {
-  repeated Vertex vertices = 1;
+message RemoveNodesRequest {
+  Graph graph = 1;
+  repeated Node nodes = 2;
 }
 
-message RemoveVerticesResponse{
-  GraphStats stats = 1;
+message RemoveNodesResponse{
+  Graph graph = 1;
+  repeated Node nodes = 2;
 }
 
 message RemoveEdgesRequest {
-  repeated Edge edges = 1;
+  Graph graph = 1;
+  repeated Edge edges = 2;
 }
 
 message RemoveEdgesResponse {
@@ -72,8 +76,8 @@ message RemoveEdgesResponse {
 
 service KonigRPC {
   rpc CreateGraph(CreateGraphRequest) returns (CreateGraphResponse);
-  rpc AddVertices(AddVerticesRequest) returns (AddVerticesResponse);
+  rpc AddNodes(AddNodesRequest) returns (AddNodesResponse);
   rpc AddEdges(AddEdgesRequest) returns (AddEdgesResponse);
-  rpc RemoveVertices(RemoveVerticesRequest) returns (RemoveVerticesResponse);
+  rpc RemoveNodes(RemoveNodesRequest) returns (RemoveNodesResponse);
   rpc RemoveEdges(RemoveEdgesRequest) returns (RemoveEdgesResponse);
 }
