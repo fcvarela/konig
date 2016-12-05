@@ -14,8 +14,8 @@ all: $(BIN) $(CLIENT_BIN)
 lint:
 	$(LINTER) cmd/client
 	$(LINTER) -e pb.go rpc
-	$(LINTER) graph
-	$(LINTER) graphview
+	#$(LINTER) graph
+	#$(LINTER) graphview
 
 test:
 	$(GO) test $(PACKAGE_PREFIX)/rpc $(PACKAGE_PREFIX)/graph

@@ -109,17 +109,20 @@ func (s *KonigService) RemoveEdges(ctx context.Context, in *RemoveEdgesRequest) 
 }
 
 //Start starts an RPC server
-func Start(host string, port uint) {
+func Start(host string, port uint, debug bool) {
 	srv := &KonigService{}
 	opts := []grpc.ServerOption{}
-	opts = append(opts, grpc_middleware.WithUnaryServerChain(RequestLogger))
+	i := NewInterceptor(debug)
+	opts = append(opts, grpc_middleware.WithUnaryServerChain(i.RequestLogger))
 	s := grpc.NewServer(opts...)
 	RegisterKonigRPCServer(s, srv)
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
 		glog.Fatalf("Could not start listener: %s", err)
 	}
-	glog.Infof("Starting gRPC server at: %s", listener.Addr().String())
+	if debug {
+		glog.Infof("Starting gRPC server at: %s", listener.Addr().String())
+	}
 	glog.Fatal(s.Serve(listener))
 
 	// read stop handler, close rpc server/clean shutdown
