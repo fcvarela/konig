@@ -1,13 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <GL/glew.h>
+#include <gl/glew.h>
 
 #if defined ( __APPLE__ )
 #include <OpenCL/opencl.h>
 #define GLFW_EXPOSE_NATIVE_COCOA
 #define GLFW_EXPOSE_NATIVE_NSGL
-#include <OpenGL/OpenGL.h>
 #elif defined ( WIN32 )
 #include <CL/cl.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -20,6 +19,7 @@
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
 
@@ -62,6 +62,8 @@ extern "C" {
     // init imgui
     ImGui_ImplGlfwGL3_Init(window, true);
     ImGuiIO& io = ImGui::GetIO();
+    //io.WantCaptureMouse = true;
+    io.MouseDrawCursor = true;
     io.IniFilename = NULL;
 
     // enable v-sync
