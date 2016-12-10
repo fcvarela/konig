@@ -1,7 +1,5 @@
 package konig
 
-import "github.com/golang/glog"
-
 // Solver defines the solve interface
 type Solver interface {
 	// Step iterates the solver by recomputing the graph layout
@@ -50,7 +48,6 @@ func Shutdown() {
 func Step() bool {
 	dt, quit := view.Update()
 	graphsLock.Lock()
-	glog.Infof("Will solve %d graphs\n", len(graphs))
 	for _, g := range graphs {
 		if err := solver.Step(dt, g.Nodes, g.Edges); err != nil {
 			panic(err)
