@@ -1,17 +1,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <gl/glew.h>
-
 #if defined ( __APPLE__ )
+#include <gl/glew.h>
 #include <OpenCL/opencl.h>
 #define GLFW_EXPOSE_NATIVE_COCOA
 #define GLFW_EXPOSE_NATIVE_NSGL
 #elif defined ( WIN32 )
+#include <GL/glew.h>
 #include <CL/cl.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
 #else
+#include <GL/glew.h>
 #include <CL/cl.h>
 #define GLFW_EXPOSE_NATIVE_X11
 #define GLFW_EXPOSE_NATIVE_GLX
@@ -75,10 +76,7 @@ extern "C" {
 
   ImVec4 clear_color = ImColor(114, 144, 154);
 
-  int graphview_update() {
-    // get events
-    glfwPollEvents();
-
+  int graphview_update(double *dt) {
     // draw our stuff
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     {}
@@ -101,6 +99,11 @@ extern "C" {
 
     ImGui::Render();
     glfwSwapBuffers(window);
+
+    *dt = 1.0/ImGui::GetIO().Framerate;
+
+    // get events
+    glfwPollEvents();
     return glfwWindowShouldClose(window);
   }
 

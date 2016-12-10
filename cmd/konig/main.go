@@ -6,7 +6,9 @@ import (
 	"os/signal"
 	"runtime"
 
-	"github.com/fcvarela/konig/graphview"
+	"github.com/fcvarela/konig"
+	"github.com/fcvarela/konig/cpusolver"
+	"github.com/fcvarela/konig/glview"
 	"github.com/fcvarela/konig/rpc"
 	"github.com/golang/glog"
 )
@@ -51,8 +53,12 @@ func main() {
 	// placeholder
 	go rpc.Start(grpcHost, grpcPort)
 
-	// 0, 0, fullscreen. graph ignores width and height when full screen is set
-	graphview.Init(1280, 720, false)
+	// init view and solver
+	view := glview.New(1280, 720, false)
+	solver := cpusolver.New()
+
+	// call defered startup
+	konig.Startup(solver, view)
 
 	// wait on sigint
 	for {
@@ -61,7 +67,7 @@ func main() {
 		case <-signalhandlerChannel:
 			stop = true
 		default:
-			stop = graphview.Update()
+			stop = konig.Step()
 		}
 		if stop {
 			break
@@ -69,5 +75,5 @@ func main() {
 	}
 
 	glog.Info("Got abort signal, stopping...")
-	graphview.Shutdown()
+	konig.Shutdown()
 }

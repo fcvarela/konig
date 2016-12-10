@@ -1,8 +1,4 @@
-// Package graph provides an implementation of a graph whose nodes and edges are represented
-// in sequential memory so that they can be used directly by compute and graphics kernels.
-// the convention for thread safery is to use a mutex on outer operations (public api)
-// and _not_ on inner operations (lowercase).
-package graph
+package konig
 
 import (
 	"fmt"
@@ -21,24 +17,24 @@ type NodeHandle string
 type EdgeHandle string
 
 // std140 alignment for opengl/opencl
-type node struct {
-	position     [4]float32
-	velocity     [4]float32
-	acceleration [4]float32
-	active       [4]float32
+type Node struct {
+	Position     [4]float32
+	Velocity     [4]float32
+	Acceleration [4]float32
+	Active       [4]float32
 }
 
-type edge struct {
-	node1Index uint32
-	node2Index uint32
+type Edge struct {
+	Node1Index uint32
+	Node2Index uint32
 }
 
 // graph contains all data necessary to manage a graph where nodes and edges
 // are continuous memory regions. this makes it really easy to use as a GPU
 // buffer we can use directly with both compute kernels and draw operations.
-type graph struct {
-	nodes       []node
-	edges       []edge
+type Graph struct {
+	Nodes       []Node
+	Edges       []Edge
 	freeNodeSet map[uint32]struct{}
 	freeEdgeSet map[uint32]struct{}
 	nodeHandles map[NodeHandle]uint32
@@ -51,7 +47,7 @@ type graph struct {
 
 var (
 	graphsLock   sync.Mutex
-	graphs       []graph
+	graphs       []Graph
 	graphHandles map[Handle]uint32
 )
 
@@ -62,7 +58,7 @@ var (
 )
 
 func init() {
-	graphs = make([]graph, 0)
+	graphs = make([]Graph, 0)
 	graphHandles = make(map[Handle]uint32)
 }
 
@@ -72,9 +68,9 @@ func New() Handle {
 	defer graphsLock.Unlock()
 
 	// initialize it
-	var g = graph{
-		nodes:         make([]node, 0),
-		edges:         make([]edge, 0),
+	var g = Graph{
+		Nodes:         make([]Node, 0),
+		Edges:         make([]Edge, 0),
 		nodeHandles:   make(map[NodeHandle]uint32),
 		edgeHandles:   make(map[EdgeHandle]uint32),
 		freeNodeSet:   make(map[uint32]struct{}),
@@ -92,6 +88,20 @@ func New() Handle {
 	graphHandles[handle] = uint32(len(graphs) - 1)
 
 	return handle
+}
+
+// NodesAndEdges returns a copy of the node slice, this will be used
+// by solvers and renderers.
+func NodesAndEdges(g Handle) ([]Node, []Edge, error) {
+	graphsLock.Lock()
+	defer graphsLock.Unlock()
+
+	gidx, ok := graphHandles[g]
+	if !ok {
+		return nil, nil, fmt.Errorf(errGraphNotFound, g)
+	}
+
+	return graphs[gidx].Nodes, graphs[gidx].Edges, nil
 }
 
 // NewNode returns a handle for a newly created graph node
@@ -115,12 +125,12 @@ func NewNode(g Handle) (NodeHandle, error) {
 	}
 
 	if !found {
-		nodeIndex = uint32(len(graphs[gidx].nodes))
-		graphs[gidx].nodes = append(graphs[gidx].nodes, node{})
+		nodeIndex = uint32(len(graphs[gidx].Nodes))
+		graphs[gidx].Nodes = append(graphs[gidx].Nodes, Node{})
 	}
 
 	// make active
-	graphs[gidx].nodes[nodeIndex].active = [4]float32{1.0, 1.0, 1.0, 1.0}
+	graphs[gidx].Nodes[nodeIndex].Active = [4]float32{1.0, 1.0, 1.0, 1.0}
 
 	// create a handle
 	var handle = NodeHandle(uuid.NewV4().String())
@@ -152,7 +162,7 @@ func DeleteNode(g Handle, n NodeHandle) error {
 	delete(graphs[gidx].nodeHandles, n)
 
 	// make it inactive so the cl kernel and shaders won't use it
-	graphs[gidx].nodes[index].active = [4]float32{0.0, 0.0, 0.0, 0.0}
+	graphs[gidx].Nodes[index].Active = [4]float32{0.0, 0.0, 0.0, 0.0}
 
 	// add the node to the graphs freeNode list so that it can be used
 	// the next time a node is created.
@@ -192,8 +202,8 @@ func NewEdge(g Handle, nh1, nh2 NodeHandle) (EdgeHandle, error) {
 	}
 
 	if !found {
-		edgeIndex = uint32(len(graphs[gidx].edges))
-		graphs[gidx].edges = append(graphs[gidx].edges, edge{})
+		edgeIndex = uint32(len(graphs[gidx].Edges))
+		graphs[gidx].Edges = append(graphs[gidx].Edges, Edge{})
 	}
 
 	// resolve n1 and n2
@@ -208,7 +218,7 @@ func NewEdge(g Handle, nh1, nh2 NodeHandle) (EdgeHandle, error) {
 	}
 
 	// set it
-	graphs[gidx].edges[edgeIndex] = edge{node1Index: n1, node2Index: n2}
+	graphs[gidx].Edges[edgeIndex] = Edge{Node1Index: n1, Node2Index: n2}
 
 	// get a handle
 	var handle = EdgeHandle(uuid.NewV4().String())
@@ -243,8 +253,8 @@ func deleteEdge(g Handle, e EdgeHandle) error {
 	graphs[gidx].freeEdgeSet[eidx] = struct{}{}
 
 	// it will still end up in the gpu so make it a zero-length line
-	graphs[gidx].edges[eidx].node1Index = 0
-	graphs[gidx].edges[eidx].node2Index = 0
+	graphs[gidx].Edges[eidx].Node1Index = 0
+	graphs[gidx].Edges[eidx].Node2Index = 0
 
 	return nil
 }
