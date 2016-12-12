@@ -1,4 +1,6 @@
-package glview
+// Package openglrenderer implements the konig.Renderer interface
+// by providing an OpenGL based windowed graph renderer.
+package openglrenderer
 
 /*
 // Windows Build Tags

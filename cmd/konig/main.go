@@ -7,8 +7,8 @@ import (
 	"runtime"
 
 	"github.com/fcvarela/konig"
-	"github.com/fcvarela/konig/cpusolver"
-	"github.com/fcvarela/konig/glview"
+	"github.com/fcvarela/konig/openclsolver"
+	"github.com/fcvarela/konig/openglrenderer"
 	"github.com/fcvarela/konig/rpc"
 	"github.com/golang/glog"
 )
@@ -53,12 +53,14 @@ func main() {
 	// placeholder
 	go rpc.Start(grpcHost, grpcPort)
 
-	// init view and solver
-	view := glview.New(1280, 720, false)
-	solver := cpusolver.New()
+	// init the renderer
+	renderer := openglrenderer.New(1280, 720, false)
+
+	// init the solver
+	solver := openclsolver.New()
 
 	// call defered startup
-	konig.Startup(solver, view)
+	konig.Startup(solver, renderer)
 
 	// wait on sigint
 	for {

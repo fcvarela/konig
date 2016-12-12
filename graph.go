@@ -16,6 +16,18 @@ type NodeHandle string
 // EdgeHandle is an opaque type which represents a graph edge
 type EdgeHandle string
 
+// The following are used to synchronize solvers
+// with renderers when object sharing is required.
+// They represent memory owned by a hardware device.
+
+// NodeBufferHandle wraps a handle to a buffer
+// containing a graph's nodes
+type NodeBufferHandle interface{}
+
+// EdgeBufferHandle wraps a handle to a buffer
+// containing a graph's edge index pairs.
+type EdgeBufferHandle interface{}
+
 // std140 alignment for opengl/opencl
 type Node struct {
 	Position     [4]float32
@@ -29,16 +41,20 @@ type Edge struct {
 	Node2Index uint32
 }
 
-// graph contains all data necessary to manage a graph where nodes and edges
+// Graph contains all data necessary to manage a graph where nodes and edges
 // are continuous memory regions. this makes it really easy to use as a GPU
 // buffer we can use directly with both compute kernels and draw operations.
 type Graph struct {
-	Nodes       []Node
-	Edges       []Edge
-	freeNodeSet map[uint32]struct{}
-	freeEdgeSet map[uint32]struct{}
-	nodeHandles map[NodeHandle]uint32
-	edgeHandles map[EdgeHandle]uint32
+	Nodes            []Node
+	Edges            []Edge
+	InputNodeBuffer  NodeBufferHandle
+	OutputNodeBuffer NodeBufferHandle
+	EdgeBuffer       NodeBufferHandle
+	layout           SolverLayout
+	freeNodeSet      map[uint32]struct{}
+	freeEdgeSet      map[uint32]struct{}
+	nodeHandles      map[NodeHandle]uint32
+	edgeHandles      map[EdgeHandle]uint32
 
 	// contains a list of edges pointing to and from each node
 	// we use this to delete those edges when a node is deleted
@@ -71,6 +87,7 @@ func New() Handle {
 	var g = Graph{
 		Nodes:         make([]Node, 0),
 		Edges:         make([]Edge, 0),
+		layout:        SolverLayoutForceDirected,
 		nodeHandles:   make(map[NodeHandle]uint32),
 		edgeHandles:   make(map[EdgeHandle]uint32),
 		freeNodeSet:   make(map[uint32]struct{}),
@@ -88,6 +105,20 @@ func New() Handle {
 	graphHandles[handle] = uint32(len(graphs) - 1)
 
 	return handle
+}
+
+// SetLayout sets a graph's solver layout
+func SetLayout(g Handle, l SolverLayout) error {
+	graphsLock.Lock()
+	defer graphsLock.Unlock()
+
+	gidx, ok := graphHandles[g]
+	if !ok {
+		return fmt.Errorf(errGraphNotFound, g)
+	}
+
+	graphs[gidx].layout = l
+	return nil
 }
 
 // NodesAndEdges returns a copy of the node slice, this will be used

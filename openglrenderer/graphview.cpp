@@ -76,7 +76,7 @@ extern "C" {
 
   ImVec4 clear_color = ImColor(114, 144, 154);
 
-  int graphview_update(double *dt) {
+  int graphview_update(float *dt) {
     // draw our stuff
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     {}
@@ -100,8 +100,9 @@ extern "C" {
     ImGui::Render();
     glfwSwapBuffers(window);
 
-    *dt = 1.0/ImGui::GetIO().Framerate;
-
+    double dt_d = 1.0/ImGui::GetIO().Framerate;
+    *dt = (float)dt_d;
+    
     // get events
     glfwPollEvents();
     return glfwWindowShouldClose(window);
