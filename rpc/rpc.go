@@ -1,3 +1,4 @@
+//go:generate ./codegen.sh
 package rpc
 
 import (
@@ -6,10 +7,9 @@ import (
 	"net"
 
 	"github.com/golang/glog"
-	"google.golang.org/grpc"
-
 	"github.com/mwitkow/go-grpc-middleware"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 type KonigService struct {

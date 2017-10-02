@@ -16,7 +16,7 @@ type NodeHandle string
 // EdgeHandle is an opaque type which represents a graph edge
 type EdgeHandle string
 
-// std140 alignment for opengl/opencl
+// Node is std140 aligned for opengl/opencl
 type Node struct {
 	Position     [4]float32
 	Velocity     [4]float32
@@ -24,12 +24,13 @@ type Node struct {
 	Active       [4]float32
 }
 
+// Edge represents a graph edge between two nodes
 type Edge struct {
 	Node1Index uint32
 	Node2Index uint32
 }
 
-// graph contains all data necessary to manage a graph where nodes and edges
+// Graph contains all data necessary to manage a graph where nodes and edges
 // are continuous memory regions. this makes it really easy to use as a GPU
 // buffer we can use directly with both compute kernels and draw operations.
 type Graph struct {
@@ -248,7 +249,7 @@ func deleteEdge(g Handle, e EdgeHandle) error {
 	// delete the edge
 	delete(graphs[gidx].edgeHandles, e)
 
-	// add the edge to the graphs freeNode list so that it can be used
+	// add the edge to the graphs freeEdge list so that it can be used
 	// the next time an edge is created.
 	graphs[gidx].freeEdgeSet[eidx] = struct{}{}
 

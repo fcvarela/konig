@@ -9,10 +9,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/fcvarela/konig/rpc"
 	"google.golang.org/grpc"
 	"gopkg.in/urfave/cli.v2"
-
-	"github.com/fcvarela/konig/rpc"
 )
 
 var (

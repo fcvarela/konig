@@ -13,16 +13,14 @@ all: $(BIN) $(CLIENT_BIN)
 vet:
 	$(GO) vet $(PACKAGE_PREFIX)/cmd/konig
 	$(GO) vet $(PACKAGE_PREFIX)/cmd/client
-	$(GO) vet $(PACKAGE_PREFIX)/graph
-	$(GO) vet $(PACKAGE_PREFIX)/graphview
 	$(GO) vet $(PACKAGE_PREFIX)/rpc
+	$(GO) vet $(PACKAGE_PREFIX)
 
 lint:
 	golint $(PACKAGE_PREFIX)/cmd/konig
 	golint $(PACKAGE_PREFIX)/cmd/client
-	golint $(PACKAGE_PREFIX)/graph
-	golint $(PACKAGE_PREFIX)/graphview
 	golint $(PACKAGE_PREFIX)/rpc
+	golint $(PACKAGE_PREFIX)
 
 test:
 	$(GO) test $(PACKAGE_PREFIX)/rpc $(PACKAGE_PREFIX)/graph

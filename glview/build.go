@@ -16,7 +16,7 @@ package glview
 #cgo darwin CFLAGS: -D_GLFW_COCOA -D_GLFW_USE_CHDIR -D_GLFW_USE_MENUBAR -Wno-deprecated-declarations
 
 // Linker Options:
-#cgo darwin LDFLAGS: -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -lglfw3 -lGLEW
+#cgo darwin LDFLAGS: -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -lglfw -lGLEW
 
 
 // Linux Build Tags

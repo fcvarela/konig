@@ -7,7 +7,7 @@ type Solver interface {
 	Step(dt float64, nodes []Node, edges []Edge) error
 }
 
-// GraphView defines an interface used to render a graph
+// View defines an interface used to render a graph
 type View interface {
 	// Startup provides a post-init hook for the view
 	// to perform any initialization it may require (create windows, etc)
@@ -45,6 +45,7 @@ func Shutdown() {
 	view.Shutdown()
 }
 
+// Step performs the simulation time-step (solver step and view update)
 func Step() bool {
 	dt, quit := view.Update()
 	graphsLock.Lock()
