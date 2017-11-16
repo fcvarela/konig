@@ -49,12 +49,13 @@ func Shutdown() {
 func Step() bool {
 	dt, quit := view.Update()
 	graphsLock.Lock()
+	defer graphsLock.Unlock()
+
 	for _, g := range graphs {
 		if err := solver.Step(dt, g.Nodes, g.Edges); err != nil {
 			panic(err)
 		}
 	}
-	defer graphsLock.Unlock()
 
 	return quit
 }

@@ -80,9 +80,11 @@ ImVec4 clear_color = ImColor(114, 144, 154);
 int graphview_update(double *dt) {
   // draw our stuff
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  {}
+  {
+    // draw here
+  }
 
-  // draw ui
+  // overlay ui
   ImGui_ImplGlfwGL3_NewFrame();
 
   bool show_test_window = true;

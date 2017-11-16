@@ -36,7 +36,7 @@ func init() {
 	flag.Parse()
 
 	// we need to process input and draw on the main thread
-	// which is the one we always start on
+	// which is the one we start on
 	runtime.LockOSThread()
 
 	// parse flags
@@ -62,13 +62,15 @@ func main() {
 
 	// wait on sigint
 	for {
-		var stop = false
+		var stop bool
+
 		select {
 		case <-signalhandlerChannel:
 			stop = true
 		default:
 			stop = konig.Step()
 		}
+
 		if stop {
 			break
 		}

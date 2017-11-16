@@ -1,3 +1,4 @@
+// Package rpc implements the KonigService gRPC API
 //go:generate ./codegen.sh
 package rpc
 
@@ -7,7 +8,7 @@ import (
 	"net"
 
 	"github.com/golang/glog"
-	"github.com/mwitkow/go-grpc-middleware"
+	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -94,14 +95,14 @@ func (s *KonigService) RemoveEdges(ctx context.Context, in *RemoveEdgesRequest) 
 //Start starts an RPC server
 func Start(host string, port uint) {
 	srv := &KonigService{}
-	opts := []grpc.ServerOption{}
-	opts = append(opts, grpc_middleware.WithUnaryServerChain(RequestLogger))
-	s := grpc.NewServer(opts...)
+	s := grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(LoggingInterceptor)))
+
 	RegisterKonigRPCServer(s, srv)
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
 		glog.Fatalf("Could not start listener: %s", err)
 	}
+
 	glog.Infof("Starting gRPC server at: %s", listener.Addr().String())
 	glog.Fatal(s.Serve(listener))
 
